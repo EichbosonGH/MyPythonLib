@@ -2,3 +2,4 @@
 
 * Moin!
 * Hallo!
+* Salut!
