@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import sklearn
+import sklearn.metrics
 
 ###
 def check_df(df: pd.DataFrame):
@@ -61,22 +61,34 @@ def feat_imp(Predictor,Names=None):
     res.sort_values('importance',inplace=True,ascending=False)
     #
     return res
-    
+   
 ###
-def mem_lookup(List: list=[],n: int=10):
-    mem = dict()
+def mem_lookup(List,n:int=10):
+    '''
+    Liste der <n> speicherintensivsten Nutzervariablen.
+    
+    Input
+    -----
+    List: list,
+          Lister der Variablen, z.B. List=%who_ls
+    n: integer,
+       Länge der Top Liste
+
+    Output
+    ------
+    pandas.Series: Top Liste der Nutzervariablen mit Speicherbedarf in MB.
+    '''
+    S,X = list(),list()
     for x in List:
-        try: 
-            mem[x] = eval(x+'.__sizeof__()/1024**2')            
-            print(x,mem[x])
+        try:
+            X.append(x)
+            S.append(eval(f'{x}.__sizeof__()/1024**2'))
         except:
-            pass        
+            pass
     #
-    mem = pd.Series(mem,dtype=float,name='Size (MB)').sort_values(ascending=False).to_frame()
-    return mem
-    #return mem.head(n)
+    return pd.Series(index=X,data=S,dtype=float).sort_values(ascending=False).head(n)
 
 ###
 def toy(List: list=[],n: int=10):
     for x in List:
-        print(x)    
+        print(x)   

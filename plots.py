@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.stats
-import sklearn
+import sklearn.metrics
 import matplotlib.pyplot as plt
 
 ###
@@ -72,3 +72,47 @@ def rang_plot(ds,topn=10,dropna=False):
     plt.ylabel('Anteil')
     #
     return None
+
+###
+def draw_silhouette(DistM,Label):
+    '''
+    Zeichne Silhouette Plot (https://de.wikipedia.org/wiki/Silhouettenkoeffizient)
+    
+    Input
+    -----
+    DistM: array-like mit shape = (n_samples,n_samples),
+           Symmetrische Distanzmatrix
+           
+    Label: array-like mit Länge = n_samples
+           Array der Labels je Datenpunkte.
+    
+    Output
+    ------
+    (None)
+    
+    '''
+    # stop if no clusters there
+    if np.all(Label==-1):
+        print('>>> draw_silhouette(): all labels == -1 !!!')
+        return 0    
+    else:
+        sil_val = sklearn.metrics.silhouette_samples(DistM,Label,metric='precomputed')
+        # select all but noise
+        sel_cl = Label>-1 
+        labels = Label[sel_cl]
+        sil_val = sil_val[sel_cl]
+        cluster_id = np.unique(labels)
+        cluster_rate = sel_cl.mean()
+        # x Skala von 0 bis 1
+        _x = np.r_[0:1:labels.size*1j]
+        # Loop über labels
+        for i in np.unique(labels):
+            color = plt.cm.turbo(i/cluster_id.size)
+            plt.fill_between(x=_x,y1=0,y2=sil_val,where=labels==i,facecolor=color,edgecolor=color,alpha=1.0)
+        # Dekoration
+        title = f'Silhouette: Min={sil_val.min():2.1f}, Median = {np.median(sil_val):2.2f}, Max = {sil_val.max():2.2f}'
+        plt.title(title,fontsize=10)
+        plt.tick_params(bottom=True,labelbottom=False)
+        plt.ylabel('Silhouette Score')
+        # 
+        return
