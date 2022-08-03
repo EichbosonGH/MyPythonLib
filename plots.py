@@ -74,7 +74,7 @@ def rang_plot(ds,topn=10,dropna=False):
     return None
 
 ###
-def draw_silhouette(DistM,Label):
+def draw_silhouette(DistM,Label,gap:int=1):
     '''
     Zeichne Silhouette Plot (https://de.wikipedia.org/wiki/Silhouettenkoeffizient)
     
@@ -86,33 +86,29 @@ def draw_silhouette(DistM,Label):
     Label: array-like mit Länge = n_samples
            Array der Labels je Datenpunkte.
     
+    gap:   int,
+           Lücke zwischen Clustern in Anzahl Schrittweite.
+    
     Output
     ------
-    (None)
-    
+    (None)    
     '''
-    # stop if no clusters there
-    if np.all(Label==-1):
-        print('>>> draw_silhouette(): all labels == -1 !!!')
-        return 0    
-    else:
-        sil_val = sklearn.metrics.silhouette_samples(DistM,Label,metric='precomputed')
-        # select all but noise
-        sel_cl = Label>-1 
-        labels = Label[sel_cl]
-        sil_val = sil_val[sel_cl]
-        cluster_id = np.unique(labels)
-        cluster_rate = sel_cl.mean()
-        # x Skala von 0 bis 1
-        _x = np.r_[0:1:labels.size*1j]
-        # Loop über labels
-        for i in np.unique(labels):
-            color = plt.cm.turbo(i/cluster_id.size)
-            plt.fill_between(x=_x,y1=0,y2=sil_val,where=labels==i,facecolor=color,edgecolor=color,alpha=1.0)
-        # Dekoration
-        title = f'Silhouette: Min={sil_val.min():2.1f}, Median = {np.median(sil_val):2.2f}, Max = {sil_val.max():2.2f}'
-        plt.title(title,fontsize=10)
-        plt.tick_params(bottom=True,labelbottom=False)
-        plt.ylabel('Silhouette Score')
-        # 
-        return
+    sil_val = sklearn.metrics.silhouette_samples(DistM,Label,metric='precomputed')
+    tmp = pd.DataFrame({'label':Label,'score':sil_val})
+    tmp.sort_values(['label','score'],ascending=[True,False],inplace=True,ignore_index=True)
+    # select all but noise
+    tmp = tmp[tmp.label>-1].reset_index(drop=True)
+    # Loop über labels
+    _x = tmp.index.values
+    for i in tmp.label.unique():
+        sel = (tmp.label==i)
+        color = plt.cm.turbo(i/tmp.label.nunique())
+        plt.fill_between(x=_x-(1-gap)*i,y1=0,y2=tmp.score,where=sel,facecolor=color,lw=0.0)
+        # plt.bar(x=_x[sel]+gap*i,height=tmp[sel].score,bottom=0,width=1,color=color) # Barplot für Testzwecke
+    # Dekoration
+    title = f'Silhouette: Min={tmp.score.min():2.1f}, Median = {tmp.score.median():2.2f}, Max = {tmp.score.max():2.2f}'
+    plt.title(title,fontsize=10)
+    plt.tick_params(bottom=True,labelbottom=False)
+    plt.ylabel('Silhouette Score')
+    # 
+    return

@@ -89,6 +89,16 @@ def mem_lookup(List,n:int=10):
     return pd.Series(index=X,data=S,dtype=float).sort_values(ascending=False).head(n)
 
 ###
+def knee_point(y):
+    ''' 
+    Finde Knee point
+    '''
+    x=np.r_[0:1:y.size*1j]
+    xy=np.r_[[x,y]].T
+    XY = sklearn.preprocessing.MinMaxScaler().fit_transform(xy)
+    return np.sum(XY,axis=1).argmin()
+
+###
 def toy(List: list=[],n: int=10):
     for x in List:
         print(x)   
