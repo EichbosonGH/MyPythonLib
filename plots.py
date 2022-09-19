@@ -47,9 +47,12 @@ def Gini_plot(X,Y=None,dq=0.1,Return=False,Draw=True):
         pass
 
 ###
-def rang_plot(ds,topn=10,dropna=False):
+def rang_plot(data,topn=10,dropna=False):
+    '''
+    Rang Plot einer Folge von Werten
+    '''
     # Zählstatistik
-    tmp = ds.value_counts(dropna=dropna).rename('Nevt').to_frame()
+    tmp = pd.Series(data=data).value_counts(dropna=dropna).rename('Nevt').to_frame()
     # rel. Häufigkeit und Rang
     tmp['Frac'] = tmp.Nevt/tmp.Nevt.sum()
     tmp['Rang'] = tmp.Nevt.rank(ascending=False,method='first',pct=False).astype('int32')
@@ -67,7 +70,7 @@ def rang_plot(ds,topn=10,dropna=False):
         plt.xscale('log')
     # Dekoration
     plt.legend(fontsize=7)
-    plt.title(f'{ds.name} (rel. Entr. = {rel_entr:2.1%})')
+    plt.title(f'rel. Entr. = {rel_entr:2.1%}')
     plt.xlabel('Rang')
     plt.ylabel('Anteil')
     #

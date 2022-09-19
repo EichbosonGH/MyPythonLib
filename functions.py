@@ -2,28 +2,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics
-
-###
-def check_df(df: pd.DataFrame):
-    '''
-	Ausgabe Anzahl Zeilen x Spalten und Größeninfos
-	'''  
-    try:
-        nrows,ncols = df.shape
-    except ValueError:
-        nrows,ncols = df.index.size,1
-    size  = df.__sizeof__()
-    print(f'>>> {nrows:,} x {ncols:,} = {size/1024**2:2.1f} MB ({size/max(nrows,1):2.0f} Byte/Zeile)')
-
-### 
-def check_ar(array):
-    nrows = array.shape[0]
-    try:
-        ncols = array.shape[1]
-    except IndexError:
-        ncols = 0
-    size  = array.nbytes/1024**2
-    print(f'>>> {nrows:,} x {ncols:,} = {size:2.1f} MB ({size*1024**2/(nrows+1e-8):2.0f} Byte/Zeile)')
     
 ###
 def metrics(y_true,y_pred,Norm=1,Print=True,Return=False):
@@ -62,32 +40,6 @@ def feat_imp(Predictor,Names=None):
     #
     return res
    
-###
-def mem_lookup(List,n:int=10):
-    '''
-    Liste der <n> speicherintensivsten Nutzervariablen.
-    
-    Input
-    -----
-    List: list,
-          Lister der Variablen, z.B. List=%who_ls
-    n: integer,
-       Länge der Top Liste
-
-    Output
-    ------
-    pandas.Series: Top Liste der Nutzervariablen mit Speicherbedarf in MB.
-    '''
-    S,X = list(),list()
-    for x in List:
-        try:
-            X.append(x)
-            S.append(eval(f'{x}.__sizeof__()/1024**2'))
-        except:
-            pass
-    #
-    return pd.Series(index=X,data=S,dtype=float).sort_values(ascending=False).head(n)
-
 ###
 def knee_point(y):
     ''' 

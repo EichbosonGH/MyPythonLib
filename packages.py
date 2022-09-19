@@ -11,6 +11,7 @@ import json
 #import requests
 import calendar
 import pickle
+import dill
 
 # import IPython
 import numpy as np
@@ -35,11 +36,11 @@ import sklearn.linear_model # LogisticRegression
 import sklearn.neural_network # MLPRegressor
 import sklearn.manifold # MDS, tSNE etc.
 
-plt.rc('axes', axisbelow=True)
+plt.rcParams['axes.grid']=True
+plt.rcParams['axes.axisbelow']=True
 plt.rcParams['figure.max_open_warning']=100
 plt.rcParams["figure.dpi"]=150
 plt.rcParams["figure.autolayout"]=False # true for tight layout, no adjacent subplots possible then
-plt.rcParams['axes.grid']=True
 pd.set_option('display.width',200)
 pd.set_option('display.max_columns',60)
 pd.set_option('display.max_rows',60)

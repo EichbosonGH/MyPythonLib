@@ -48,12 +48,13 @@ def check_cols_generic(df: pd.DataFrame):
     Dtypes  = df.dtypes
     # Ergebnistabelle
     tmp = pd.DataFrame({'dtype'    : Dtypes,
+                        'Bytes/row': mem_row,
+                        'f_Size'   : mem_row/mem_row.sum(),
                         'Mode'     : mode_0,
                         'N_unique' : n_uniq,
                         'Multi'    : multip,
                         'N_isna'   : n_isna,
                         'P_isna'   : p_isna,
-                        'Bytes/row': mem_row,
                        })
     #
     return tmp.astype({'N_unique' : int,
@@ -63,12 +64,70 @@ def check_cols_generic(df: pd.DataFrame):
                        'Bytes/row': float,
                       }).round(2)
 
+###
+def check_cols_number(df: pd.DataFrame):
+    '''
+    Informationen über "number" Spalten.
+    '''
+    # Spaltenselektion
+    df = df.select_dtypes(include='number').copy()
+    # Grundlegende Checks
+    if type(df) is not pd.DataFrame: return 'kein pandas.Dataframe'
+    if df.index.size==0: return 'Leeres Dataframe'
+    #
+    nrows,ncols = df.shape
+    Bytes = df.__sizeof__()
+    sorted_index = df.index.equals(df.index.sort_values())
+    print('-'*99)
+    print(f'>> N_rows    = {nrows:,d}')
+    print(f'>> N_cols    = {ncols:,d}')    
+    print(f'>> Size(MB)  = {Bytes/1024**2:2.1f}')
+    print(f'>> Bytes/row = {Bytes/nrows:2.1f}')
+    dupl = df.duplicated().sum() if nrows<500e6 else -1
+    print(f'>> N_Duplikate = {dupl:,d}') 
+    print(f'>> N_benachbarte_Duplikate = {(df.shift(-1)==df).all(axis=1).sum():,d}')
+    print(f'>> Index ist sortiert: {sorted_index}')
+    print('-'*99)
+    # Ein paar Metriken
+    dtypes  = df.dtypes
+    mem_row = df.memory_usage(index=False,deep=True)/nrows  # Bytes pro Spalte    
+    mode_0  = df.mode(numeric_only=True).loc[0] # Häufigste Ausprägung
+    Max     = df.max(numeric_only=True)
+    Min     = df.min(numeric_only=True)
+    Md      = df.median(numeric_only=True)
+    print(0)
+    Mu      = df.mean(numeric_only=True)
+    print(1)
+    Sd      = df.std(numeric_only=True)
+    print(2)
+    n_uniq  = df.nunique()
+    n_isna  = df.isna().sum()
+    multip  = nrows/n_uniq # Multiplizität: durchschn. Häufigkeit
+    # Ergebnistabelle    
+    tmp = pd.DataFrame({'dtype'    : dtypes,
+                        'Bytes/row': mem_row,
+                        'Min'      : Min,
+                        'Max'      : Max,
+                        'Mode'     : mode_0,                        
+                        'Md'       : Md,
+                        'Mu'       : Mu,
+                        'Sd'       : Sd,
+                        'N_unique' : n_uniq,
+                        'Multi'    : multip,
+                        'N_isna'   : n_isna,
+                       })
+    #    
+    return tmp.astype({'N_unique' : int,
+                       'N_isna'   : int,
+                      }).round(2)
 
 ###
-def check_cols_cats(df: pd.DataFrame,**kwargs):
+def check_cols_category(df: pd.DataFrame,**kwargs):
     '''
-    Spalteninformationen wenn Spalten als "category" definert.
+    Informationen über "category" Spalten.
     '''
+    # Spaltenselektion
+    df = df.select_dtypes(include='category').copy()
     ### Ausgabetabelle
     tab = pd.DataFrame(columns=['Modus',
                                 'N_unique',
